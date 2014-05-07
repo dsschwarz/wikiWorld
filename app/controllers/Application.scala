@@ -13,9 +13,11 @@ object Application extends Controller {
 
 	def scrape(url: String) = {
 		val webPage: Future[libs.ws.Response] = WS.url(url).get().getBody()
-		val stringRegex = """<a\s+(?:[^>]*\s+)?href="([^"]*)"[^<]*</a>""""
-		val linkPattern = stringRegex.r
-		val links = linkPattern findAllIn webPage
+		Async {
+
+			val linkPattern = """<a\s+(?:[^>]*\s+)?href="([^"]*)"[^<]*</a>""".r
+			val links = linkPattern.findAllMatchIn(webpage).toArray.map({ m => m.group(1)})
+		}
 
 	}
 
