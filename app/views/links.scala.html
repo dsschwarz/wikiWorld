@@ -1,0 +1,15 @@
+@(links: List[Map[String, String]])
+
+@main("List o' Links") {
+@links.head("start")
+		<br>
+		to ->
+	<ul>
+
+		@links.map { link =>
+			<li>
+				@link("end")
+			</li>
+		}
+	</ul>
+}

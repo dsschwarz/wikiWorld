@@ -6,6 +6,7 @@ import play.api.libs.ws._
 import play.api.libs.json.Json
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.{Success, Failure}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -20,7 +21,7 @@ object Application extends Controller {
 		val nodes = Node.find("select * from node where url='" + url+"'") //dw bout sql injection
 		if (nodes.isEmpty) {
 			scrape(url)
-			return List()
+			throw new CustomException("fetchingLinks")
 		} else {
 			val node = nodes.head
 			val links = Link.find("select * from link where nodeA = " + node.id + " OR nodeB = " + node.id)
@@ -33,9 +34,15 @@ object Application extends Controller {
 		// val links = retrieveLinks("http://workwithplay.com/blog/2013/05/08/persist-data-with-anorm/")
 		url match {
 			case Some(name) =>
-				val links = retrieveLinks(name)
-				Ok(Json.toJson(links))
-			case None => Redirect(routes.Application.index)
+				try {
+					val links = retrieveLinks(name)
+					Ok(Json.toJson(links))
+				} catch {
+					case ex: CustomException => {
+						Ok(Json.toJson( Map("success"->"false", "message" -> "Getting links")) )
+					}
+				}
+			case None => Ok(Json.toJson( Map("success"->"false", "message" -> "Need Url")) )
 		}
 	}
 
