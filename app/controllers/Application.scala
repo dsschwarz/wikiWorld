@@ -14,7 +14,19 @@ import models._
 
 object Application extends Controller {
 	def index = Action {
-		Ok(views.html.index("lorem Implicits object def (arg: Type) "))
+		Ok(views.html.index())
+	}
+
+	def links = Action {
+		val links = Link.find("select * from link")
+		val asMap = links.map {l =>
+			val nodeA = l.nodeA
+			val nodeB = l.nodeB
+			Map(
+			"start" -> Node.find(s"select * from node where id=$nodeA").head.url,
+			"end" -> Node.find(s"select * from node where id=$nodeB").head.url
+		) }
+		Ok(views.html.links(asMap))
 	}
 
 	def retrieveLinks(url: String) : List[Map[String, String]] = {
@@ -25,8 +37,10 @@ object Application extends Controller {
 		} else {
 			val node = nodes.head
 			val links = Link.find("select * from link where nodeA = " + node.id + " OR nodeB = " + node.id)
-			links.map {l => Map("start" -> (if (l.nodeA == node.id) node.url else Node.find("select * from node where id=" + l.nodeA).head.url ),
-			"end" -> (if (l.nodeB == node.id) node.url else Node.find("select * from node where id=" + l.nodeB).head.url ))}
+			links.map {l => Map(
+				"start" -> (if (l.nodeA == node.id) node.url else Node.find("select * from node where id=" + l.nodeA).head.url ),
+				"end" -> (if (l.nodeB == node.id) node.url else Node.find("select * from node where id=" + l.nodeB).head.url )
+			)}
 		}
 	}
 
